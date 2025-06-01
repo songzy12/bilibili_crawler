@@ -9,29 +9,30 @@ from . import storage_util
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--force", help="Whether to force update picture urls.")
+parser.add_argument("--force_update_all", help="Whether to force update all picture urls.")
 args = parser.parse_args()
 
 
-def build_all_metadata(mid, cookie):
-
-    # TODO: we can load the already crawled picture urls here.
-    metadata_dict = {}
-
+def update_metadata(metadata_dict, mid, cookie, force_update_all):
     dynamic_api_url = dynamic_util.build_dynamic_api_url(mid)
     while dynamic_api_url != "":
         api_resp = crawler_util.fetch_dynamic_api(dynamic_api_url, cookie)
         time.sleep(3)
 
         cur_metadata = dynamic_util.parse_metadata(api_resp)
-        # TODO: we can check whether current picture urls are already crawled,
-        # and break the loop early.
+        if exists(metadata_dict, cur_metadata) and not force_update_all:
+            break
         metadata_dict.update(cur_metadata)
 
         dynamic_api_url = dynamic_util.build_next_dynamic_api_url(mid, api_resp)
 
     return metadata_dict
 
+def exists(metadata_dict, cur_metadata):
+    for key in cur_metadata:
+        if key in metadata_dict:
+            return True
+    return False
 
 def download_picture(picture_url, pub_ts, index):
     filepath = storage_util.build_picture_filepath(picture_url, pub_ts, index)
@@ -53,9 +54,8 @@ def download_pictures(metadata_dict):
 
 
 if __name__ == "__main__":
-    metadata_dict = storage_util.load_metadata()
-    if not len(metadata_dict) or args.force:
-        metadata_dict = build_all_metadata(config.MID, config.COOKIE)
+    metadata_dict = storage_util.load_metadata()    
+    update_metadata(metadata_dict, config.MID, config.COOKIE, args.force_update_all)
     storage_util.dump_metadata(metadata_dict)
 
     download_pictures(metadata_dict)

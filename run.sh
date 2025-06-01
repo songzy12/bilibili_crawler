@@ -1,1 +1,1 @@
-python -m dynamic --force=true
+python -m dynamic
