@@ -19,18 +19,20 @@ def update_metadata(metadata_dict, mid, cookie, force_update_all):
         api_resp = crawler_util.fetch_dynamic_api(dynamic_api_url, cookie)
         time.sleep(3)
 
-        cur_metadata = dynamic_util.parse_metadata(api_resp)
-        if exists(metadata_dict, cur_metadata) and not force_update_all:
+        cur_metadata_dict = dynamic_util.parse_metadata(api_resp)
+        if not has_new_metadata(metadata_dict, cur_metadata_dict) and not force_update_all:
+            print(f"no new metadata in the current batch, shortcutting...")
             break
-        metadata_dict.update(cur_metadata)
+        metadata_dict.update(cur_metadata_dict)
 
         dynamic_api_url = dynamic_util.build_next_dynamic_api_url(mid, api_resp)
 
     return metadata_dict
 
-def exists(metadata_dict, cur_metadata):
-    for key in cur_metadata:
-        if key in metadata_dict:
+
+def has_new_metadata(metadata_dict, cur_metadata_dict):
+    for key in cur_metadata_dict:
+        if key not in metadata_dict:
             return True
     return False
 
