@@ -27,14 +27,15 @@ def parse_metadata(resp):
         id_str = item["id_str"]
         pub_ts = item["modules"]["module_author"]["pub_ts"]
         module_dynamic = item["modules"]["module_dynamic"]
-        text = module_dynamic["desc"]["text"]
+        # TODO: no description in the api resp now (as of Oct 2025).
+        # text = module_dynamic["desc"]["text"]
         draw = module_dynamic["major"]["draw"]
 
         metadata[id_str] = {
             "t_url": "https://t.bilibili.com/" + id_str,
             "doc_id": draw["id"],
             "upload_timestamp": pub_ts,
-            "description": text,
+            # "description": text,
             "pictures": [item["src"] for item in draw["items"]],
         }
 
