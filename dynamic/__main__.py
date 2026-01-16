@@ -36,23 +36,24 @@ def has_new_metadata(metadata_dict, cur_metadata_dict):
             return True
     return False
 
-def download_picture(picture_url, pub_ts, index):
+
+def download_picture(picture_url, pub_ts, index, cookie):
     filepath = storage_util.build_picture_filepath(picture_url, pub_ts, index)
     if os.path.exists(filepath):
         print(f"skipped: {picture_url} {filepath}")
         return
 
-    picture_content = crawler_util.fetch_picture(picture_url)
-    time.sleep(1)
+    picture_content = crawler_util.fetch_picture(picture_url, cookie)
+    time.sleep(3)
 
     storage_util.dump_picture(picture_content, filepath)
 
 
-def download_pictures(metadata_dict):
+def download_pictures(metadata_dict, cookie):
     for item in metadata_dict.values():
         pub_ts = item["upload_timestamp"]
         for index, picture_url in enumerate(item["pictures"]):
-            download_picture(picture_url, pub_ts, index)
+            download_picture(picture_url, pub_ts, index, cookie)
 
 
 if __name__ == "__main__":
@@ -60,4 +61,4 @@ if __name__ == "__main__":
     update_metadata(metadata_dict, config.MID, config.COOKIE, args.force_update_all)
     storage_util.dump_metadata(metadata_dict)
 
-    download_pictures(metadata_dict)
+    download_pictures(metadata_dict, config.COOKIE)
