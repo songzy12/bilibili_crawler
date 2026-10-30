@@ -1,3 +1,3 @@
 python -m dynamic \
-  --cookie-file dynamic/cookie.txt \
-  --user-ids-file dynamic/user_ids.txt
+  --cookie-file config/cookie.txt \
+  --user-ids-file config/user_ids.txt

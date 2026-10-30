@@ -1,5 +1,5 @@
-/dynamic/cookie.txt
-/dynamic/user_ids.txt
+/config/cookie.txt
+/config/user_ids.txt
 
 __pycache__/
 
