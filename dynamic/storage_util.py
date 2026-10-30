@@ -2,34 +2,36 @@ import os
 import json
 from datetime import datetime
 
-from . import config
-
 OUTPUT_ROOT_DIR = "output/dynamic"
 URLS_FILENAME = "picture_urls.json"
 
-urls_filepath = os.path.join(OUTPUT_ROOT_DIR, str(config.MID), URLS_FILENAME)
+
+def get_metadata_filepath(mid):
+    return os.path.join(OUTPUT_ROOT_DIR, str(mid), URLS_FILENAME)
 
 
-def load_metadata():
+def load_metadata(mid):
+    urls_filepath = get_metadata_filepath(mid)
     if not os.path.exists(urls_filepath):
         return {}
 
-    with open(urls_filepath) as f:
+    with open(urls_filepath, encoding="utf-8") as f:
         return json.loads(f.read())
 
 
-def dump_metadata(picture_urls):
+def dump_metadata(mid, picture_urls):
+    urls_filepath = get_metadata_filepath(mid)
     make_parent_dirs_if_not_exist(urls_filepath)
     with open(urls_filepath, mode="w", encoding="utf-8") as f:
         json.dump(picture_urls, f, ensure_ascii=False, indent=4)
 
 
-def build_picture_filepath(url, pub_ts, index):
+def build_picture_filepath(mid, url, pub_ts, index):
     pub_dt = datetime.fromtimestamp(int(pub_ts))
     picture_name = os.path.basename(url)
     return os.path.join(
         OUTPUT_ROOT_DIR,
-        str(config.MID),
+        str(mid),
         pub_dt.strftime("%Y/%m/%d_%H%M%S"),
         f"{index}_{picture_name}",
     )

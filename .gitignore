@@ -1,4 +1,5 @@
-config.py
+/dynamic/cookie.txt
+/dynamic/user_ids.txt
 
 __pycache__/
 

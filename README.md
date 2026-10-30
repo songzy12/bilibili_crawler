@@ -15,13 +15,19 @@ git clone --single-branch --branch output git@github.com:songzy12/bilibili-crawl
 
 运行：
 
-在 `dynamic` 文件夹下创建 `config.py`（可参考 `config_sample.py` 的内容），并填入
+在 `dynamic` 文件夹下创建两个文件：
 
-1. MID: 通过查看用户主页 url 获取：34579852
-2. COOKIE: 通过 F12 查看网络请求头文件获取。
+1. `cookie.txt`：将浏览器开发者工具网络请求头中的 Cookie 粘贴为一行。不要提交或分享此文件。
+2. `user_ids.txt`：每行填写一个用户 MID，可在用户主页 URL 中找到。可在 MID 后使用 `#` 添加用户备注；空行和以 `#` 开头的整行注释会被忽略。例如：
 
 ```
-python -m dynamic
+34579852 # 示例用户
+12345678 # 另一位用户
+# 这是整行注释
 ```
 
-输出可见：`dynamic/output/34579852/`
+```
+python -m dynamic --cookie-file dynamic/cookie.txt --user-ids-file dynamic/user_ids.txt
+```
+
+也可通过参数指定其他文件路径。每个用户的数据会分别保存在 `output/dynamic/<MID>/` 下。
