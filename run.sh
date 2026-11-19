@@ -1,3 +1,1 @@
-python -m dynamic \
-  --cookie-file config/cookie.txt \
-  --user-ids-file config/user_ids.txt
+python -m dynamic @config/flags.txt

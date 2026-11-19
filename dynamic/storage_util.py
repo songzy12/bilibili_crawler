@@ -2,16 +2,16 @@ import os
 import json
 from datetime import datetime
 
-OUTPUT_ROOT_DIR = "output/dynamic"
+DEFAULT_OUTPUT_DIR = "output"
 URLS_FILENAME = "picture_urls.json"
 
 
-def get_metadata_filepath(mid):
-    return os.path.join(OUTPUT_ROOT_DIR, str(mid), URLS_FILENAME)
+def get_metadata_filepath(mid, output_dir=DEFAULT_OUTPUT_DIR):
+    return os.path.join(output_dir, "dynamic", str(mid), URLS_FILENAME)
 
 
-def load_metadata(mid):
-    urls_filepath = get_metadata_filepath(mid)
+def load_metadata(mid, output_dir=DEFAULT_OUTPUT_DIR):
+    urls_filepath = get_metadata_filepath(mid, output_dir)
     if not os.path.exists(urls_filepath):
         return {}
 
@@ -19,18 +19,19 @@ def load_metadata(mid):
         return json.loads(f.read())
 
 
-def dump_metadata(mid, picture_urls):
-    urls_filepath = get_metadata_filepath(mid)
+def dump_metadata(mid, picture_urls, output_dir=DEFAULT_OUTPUT_DIR):
+    urls_filepath = get_metadata_filepath(mid, output_dir)
     make_parent_dirs_if_not_exist(urls_filepath)
     with open(urls_filepath, mode="w", encoding="utf-8") as f:
         json.dump(picture_urls, f, ensure_ascii=False, indent=4)
 
 
-def build_picture_filepath(mid, url, pub_ts, index):
+def build_picture_filepath(mid, url, pub_ts, index, output_dir=DEFAULT_OUTPUT_DIR):
     pub_dt = datetime.fromtimestamp(int(pub_ts))
     picture_name = os.path.basename(url)
     return os.path.join(
-        OUTPUT_ROOT_DIR,
+        output_dir,
+        "dynamic",
         str(mid),
         pub_dt.strftime("%Y/%m/%d_%H%M%S"),
         f"{index}_{picture_name}",

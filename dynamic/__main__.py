@@ -51,8 +51,8 @@ def has_new_metadata(metadata_dict, cur_metadata_dict):
     return False
 
 
-def download_picture(mid, picture_url, pub_ts, index, cookie):
-    filepath = storage_util.build_picture_filepath(mid, picture_url, pub_ts, index)
+def download_picture(mid, picture_url, pub_ts, index, cookie, output_dir=storage_util.DEFAULT_OUTPUT_DIR):
+    filepath = storage_util.build_picture_filepath(mid, picture_url, pub_ts, index, output_dir)
     if os.path.exists(filepath):
         print(f"skipped: {picture_url} {filepath}")
         return
@@ -63,15 +63,15 @@ def download_picture(mid, picture_url, pub_ts, index, cookie):
     storage_util.dump_picture(picture_content, filepath)
 
 
-def download_pictures(mid, metadata_dict, cookie):
+def download_pictures(mid, metadata_dict, cookie, output_dir=storage_util.DEFAULT_OUTPUT_DIR):
     for item in metadata_dict.values():
         pub_ts = item["upload_timestamp"]
         for index, picture_url in enumerate(item["pictures"]):
-            download_picture(mid, picture_url, pub_ts, index, cookie)
+            download_picture(mid, picture_url, pub_ts, index, cookie, output_dir)
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
     parser.add_argument(
         "--cookie-file",
         required=True,
@@ -81,6 +81,12 @@ def main():
         "--user-ids-file",
         required=True,
         help="Path to a file with one user ID per line; # starts an optional comment",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=os.path.expanduser,
+        default=storage_util.DEFAULT_OUTPUT_DIR,
+        help="Output directory (default: output)",
     )
     parser.add_argument(
         "--force-update-all",
@@ -99,10 +105,10 @@ def main():
         label = f" ({user_name})" if user_name else ""
         print(f"Processing user {mid}{label}")
 
-        metadata_dict = storage_util.load_metadata(mid)
+        metadata_dict = storage_util.load_metadata(mid, args.output_dir)
         update_metadata(metadata_dict, mid, cookie, args.force_update_all)
-        storage_util.dump_metadata(mid, metadata_dict)
-        download_pictures(mid, metadata_dict, cookie)
+        storage_util.dump_metadata(mid, metadata_dict, args.output_dir)
+        download_pictures(mid, metadata_dict, cookie, args.output_dir)
 
 
 if __name__ == "__main__":

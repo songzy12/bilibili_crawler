@@ -15,7 +15,7 @@ git clone --single-branch --branch output git@github.com:songzy12/bilibili-crawl
 
 运行：
 
-在 `dynamic` 文件夹下创建两个文件：
+将 `config_example/` 中的示例文件复制到 `config/`，然后填写：
 
 1. `cookie.txt`：将浏览器开发者工具网络请求头中的 Cookie 粘贴为一行。不要提交或分享此文件。
 2. `user_ids.txt`：每行填写一个用户 MID，可在用户主页 URL 中找到。可在 MID 后使用 `#` 添加用户备注；空行和以 `#` 开头的整行注释会被忽略。例如：
@@ -26,8 +26,34 @@ git clone --single-branch --branch output git@github.com:songzy12/bilibili-crawl
 # 这是整行注释
 ```
 
+3. `flags.txt`：填写运行参数，每行一个参数，带值的参数使用 `--参数=值` 格式。例如：
+
 ```
-python -m dynamic --cookie-file dynamic/cookie.txt --user-ids-file dynamic/user_ids.txt
+--cookie-file=config/cookie.txt
+--user-ids-file=config/user_ids.txt
+--output-dir=~/Data/weibo
+```
+
+文件中的相对路径以当前工作目录为准。文件不会进行 shell 展开；`--output-dir` 支持 `~`。
+
+在仓库根目录运行：
+
+```
+python -m dynamic @config/flags.txt
+```
+
+也可使用 `./run.sh`。仍可直接传入参数：
+
+```
+python -m dynamic --cookie-file config/cookie.txt --user-ids-file config/user_ids.txt
 ```
 
 也可通过参数指定其他文件路径。每个用户的数据会分别保存在 `output/dynamic/<MID>/` 下。
+
+可通过 `--output-dir` 指定其他输出目录，例如：
+
+```
+python -m dynamic --cookie-file config/cookie.txt --user-ids-file config/user_ids.txt --output-dir ~/Data/weibo
+```
+
+此时数据保存在 `~/Data/weibo/dynamic/<MID>/` 下；不指定时仍使用 `output/`。
