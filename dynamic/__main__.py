@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import time
 
 from . import crawler_util
@@ -27,20 +28,37 @@ def parse_user_ids(user_ids_file):
     return user_ids
 
 
-def update_metadata(metadata_dict, mid, cookie, force_update_all):
+def update_metadata(metadata_dict, mid, cookie, force_update_all, pending_ids, output_dir):
     dynamic_api_url = dynamic_util.build_dynamic_api_url(mid)
+    unseen_pending = pending_ids.copy()
+    # Keep resolved IDs on disk until their metadata has been saved.
+    persisted_pending = pending_ids.copy()
     while dynamic_api_url != "":
         api_resp = crawler_util.fetch_dynamic_api(dynamic_api_url, cookie)
         time.sleep(3)
 
-        cur_metadata_dict = dynamic_util.parse_metadata(api_resp)
-        if not has_new_metadata(metadata_dict, cur_metadata_dict) and not force_update_all:
+        cur_metadata_dict, skipped_ids = dynamic_util.parse_metadata(api_resp)
+        unseen_pending.difference_update(cur_metadata_dict, skipped_ids)
+        pending_ids.difference_update(cur_metadata_dict)
+        pending_ids.update(skipped_ids)
+        if not skipped_ids.issubset(persisted_pending):
+            persisted_pending.update(skipped_ids)
+            storage_util.dump_pending_ids(mid, persisted_pending, output_dir)
+
+        if (not has_new_metadata(metadata_dict, cur_metadata_dict)
+                and not force_update_all and not unseen_pending and not skipped_ids):
             print(f"no new metadata in the current batch, shortcutting...")
             break
         metadata_dict.update(cur_metadata_dict)
 
         dynamic_api_url = dynamic_util.build_next_dynamic_api_url(mid, api_resp)
 
+    if unseen_pending:
+        print(
+            f"Warning: {len(unseen_pending)} pending dynamics were not found for user {mid}; "
+            "they will be retried",
+            file=sys.stderr,
+        )
     return metadata_dict
 
 
@@ -106,8 +124,10 @@ def main():
         print(f"Processing user {mid}{label}")
 
         metadata_dict = storage_util.load_metadata(mid, args.output_dir)
-        update_metadata(metadata_dict, mid, cookie, args.force_update_all)
+        pending_ids = storage_util.load_pending_ids(mid, args.output_dir)
+        update_metadata(metadata_dict, mid, cookie, args.force_update_all, pending_ids, args.output_dir)
         storage_util.dump_metadata(mid, metadata_dict, args.output_dir)
+        storage_util.dump_pending_ids(mid, pending_ids, args.output_dir)
         download_pictures(mid, metadata_dict, cookie, args.output_dir)
 
 

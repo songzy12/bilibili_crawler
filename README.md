@@ -57,3 +57,5 @@ python -m dynamic --cookie-file config/cookie.txt --user-ids-file config/user_id
 ```
 
 此时数据保存在 `~/Data/weibo/dynamic/<MID>/` 下；不指定时仍使用 `output/`。
+
+如果动态的图片详情暂不可用，程序会在标准错误输出中提示动态 ID，并将其记录在该用户目录的 `pending_dynamic_ids.json` 中。后续运行会重新查找这些动态；已无法在动态列表中找到的记录仍会保留并提示，因此可能需要扫描更多页面。

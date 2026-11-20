@@ -4,6 +4,7 @@ from datetime import datetime
 
 DEFAULT_OUTPUT_DIR = "output"
 URLS_FILENAME = "picture_urls.json"
+PENDING_FILENAME = "pending_dynamic_ids.json"
 
 
 def get_metadata_filepath(mid, output_dir=DEFAULT_OUTPUT_DIR):
@@ -24,6 +25,25 @@ def dump_metadata(mid, picture_urls, output_dir=DEFAULT_OUTPUT_DIR):
     make_parent_dirs_if_not_exist(urls_filepath)
     with open(urls_filepath, mode="w", encoding="utf-8") as f:
         json.dump(picture_urls, f, ensure_ascii=False, indent=4)
+
+
+def load_pending_ids(mid, output_dir=DEFAULT_OUTPUT_DIR):
+    filepath = os.path.join(output_dir, "dynamic", str(mid), PENDING_FILENAME)
+    if not os.path.exists(filepath):
+        return set()
+
+    with open(filepath, encoding="utf-8") as f:
+        pending_ids = json.load(f)
+    if not isinstance(pending_ids, list) or not all(isinstance(item, str) for item in pending_ids):
+        raise ValueError(f"Invalid pending dynamic IDs in {filepath}")
+    return set(pending_ids)
+
+
+def dump_pending_ids(mid, pending_ids, output_dir=DEFAULT_OUTPUT_DIR):
+    filepath = os.path.join(output_dir, "dynamic", str(mid), PENDING_FILENAME)
+    make_parent_dirs_if_not_exist(filepath)
+    with open(filepath, mode="w", encoding="utf-8") as f:
+        json.dump(sorted(pending_ids), f, ensure_ascii=False, indent=4)
 
 
 def build_picture_filepath(mid, url, pub_ts, index, output_dir=DEFAULT_OUTPUT_DIR):
